@@ -10,10 +10,17 @@ import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import android.widget.EditText;
+import android.speech.tts.TextToSpeech;
+
 import android.widget.CompoundButton;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.Locale;
+
+public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener{
     private static final String TAG = "AudioDevices";
 
     private SoundPool soundPool;
@@ -24,14 +31,31 @@ public class MainActivity extends AppCompatActivity {
     private Switch audioSwitch;
     private Button speakerListButton;
 
+    private EditText textInput;
+    private Button speakButton;
+    private TextToSpeech textToSpeech;
 
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            int result = textToSpeech.setLanguage(Locale.getDefault());
+
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Toast.makeText(this, "Language not supported.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "Initialization failed.", Toast.LENGTH_SHORT).show();
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         audioOutputView = findViewById(R.id.audioOutputs);
         speakerListButton = findViewById(R.id.speakers_Button);
-
+        playButton = findViewById(R.id.play_button);
+        textInput = findViewById(R.id.text_input);
+        speakButton = findViewById(R.id.speak_button);
 
         AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         //make internal speaker as a default speaker
@@ -40,7 +64,8 @@ public class MainActivity extends AppCompatActivity {
 
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
         soundId = soundPool.load(this, R.raw.sound_file, 1);
-        playButton = findViewById(R.id.play_button);
+        textToSpeech = new TextToSpeech(this, this);
+
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,7 +110,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
+        speakButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String text = textInput.getText().toString().trim();
+                if (!text.isEmpty()) {
+                    speakText(text);
+                }
+            }
+        });
     }
 
     @Override
@@ -134,6 +167,9 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return "Unknown";
         }
+    }
+    private void speakText(String text) {
+        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
 }
