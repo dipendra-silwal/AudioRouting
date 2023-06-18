@@ -69,7 +69,9 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 soundPool.play(soundId, 1.0f, 1.0f, 1, 0, 1.0f);
+                haltTextToSpeech();
             }
         });
 
@@ -126,6 +128,16 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         super.onDestroy();
         soundPool.release();
         soundPool = null;
+        haltTextToSpeech();
+        textToSpeech.shutdown();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (textToSpeech != null && textToSpeech.isSpeaking()) {
+            textToSpeech.stop();
+        }
     }
 
     private String getDeviceTypeString(int deviceType) {
@@ -170,6 +182,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     }
     private void speakText(String text) {
         textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+    }
+
+    private void haltTextToSpeech(){
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+        }
     }
 
 }
