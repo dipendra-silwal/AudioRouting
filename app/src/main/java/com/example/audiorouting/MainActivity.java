@@ -1,4 +1,5 @@
 package com.example.audiorouting;
+import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.SoundPool;
@@ -10,6 +11,8 @@ import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import android.media.MediaPlayer;
+
 import android.widget.EditText;
 import android.speech.tts.TextToSpeech;
 
@@ -18,14 +21,18 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.IOException;
 import java.util.Locale;
+
+import android.net.Uri;
 
 public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener{
     private static final String TAG = "AudioDevices";
 
     private SoundPool soundPool;
+    private MediaPlayer mediaPlayer;
     private int soundId;
-    private Button playButton;
+    private Button playButton, mediaPlayButton;
     private TextView audioOutputView;
 
     private Switch audioSwitch;
@@ -54,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         audioOutputView = findViewById(R.id.audioOutputs);
         speakerListButton = findViewById(R.id.speakers_Button);
         playButton = findViewById(R.id.play_button);
+        mediaPlayButton = findViewById(R.id.play_Media);
         textInput = findViewById(R.id.text_input);
         speakButton = findViewById(R.id.speak_button);
 
@@ -64,14 +72,32 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
         soundId = soundPool.load(this, R.raw.sound_file, 1);
+        //soundId2 = soundPool.load(this, R.raw.national_anthem, 1);
         textToSpeech = new TextToSpeech(this, this);
+
+        mediaPlayer = MediaPlayer.create(this, R.raw.national_anthem);
 
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 soundPool.play(soundId, 1.0f, 1.0f, 1, 0, 1.0f);
                 haltTextToSpeech();
+            }
+        });
+
+        mediaPlayButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /* TODO: play audio using Media Player */
+                haltTextToSpeech();
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                    mediaPlayButton.setText("PLAY SOUND USING MEDIA PLAYER");
+                } else {
+                    mediaPlayer.start();
+                    mediaPlayButton.setText("Pause");
+                }
+
             }
         });
 
@@ -138,6 +164,9 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         if (textToSpeech != null && textToSpeech.isSpeaking()) {
             textToSpeech.stop();
         }
+        if(mediaPlayer.isPlaying()){
+            mediaPlayer.pause();
+        }
     }
 
     private String getDeviceTypeString(int deviceType) {
@@ -189,5 +218,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             textToSpeech.stop();
         }
     }
+
+
 
 }
