@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private EditText textInput;
     private Button speakButton;
     private TextToSpeech textToSpeech;
+    private boolean internalAudio=true;
 
     @Override
     public void onInit(int status) {
@@ -90,6 +91,10 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             public void onClick(View v) {
                 /* TODO: play audio using Media Player */
                 haltTextToSpeech();
+                if(internalAudio){
+                    audioManager.setSpeakerphoneOn(true);
+                    audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+                }
                 if (mediaPlayer.isPlaying()) {
                     mediaPlayer.pause();
                     mediaPlayButton.setText("PLAY SOUND USING MEDIA PLAYER");
@@ -129,11 +134,13 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     // Switch is checked, route audio to external speaker (USB-C audio device)
                     audioManager.setSpeakerphoneOn(false);
                     audioManager.setMode(AudioManager.MODE_NORMAL);
+                    internalAudio = false;
 
                 } else {
                     // Switch is unchecked, route audio to internal speaker
                     audioManager.setSpeakerphoneOn(true);
                     audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+                    internalAudio = true;
 
                 }
             }
@@ -143,6 +150,10 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             public void onClick(View v) {
                 String text = textInput.getText().toString().trim();
                 if (!text.isEmpty()) {
+                    if(internalAudio){
+                        audioManager.setSpeakerphoneOn(true);
+                        audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+                    }
                     speakText(text);
                 }
             }
